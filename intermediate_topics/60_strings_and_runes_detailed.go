@@ -6,381 +6,206 @@ import (
 )
 
 /*
-Topic 60: STRINGS AND RUNES - A Comprehensive Guide
+Topic 60: STRINGS AND RUNES
 
-═══════════════════════════════════════════════════════════════════════════════
+CONCEPT: Strings are immutable sequences of bytes. Runes are individual
+Unicode characters (type int32).
 
-PART 1: STRINGS
-
-DEFINITION:
-A string is a sequence of bytes that often represent text.
-Strings are IMMUTABLE - once created, their values cannot be changed.
-
-KEY CHARACTERISTICS:
-- Immutable: Cannot be modified after creation
-- Sequences of bytes: Represent text using byte values
-- Can be declared with double quotes or backticks
-- Support escape sequences (when using double quotes)
-- Can be concatenated, compared, and indexed
-- Have a length that can be calculated
-
-STRING DECLARATION & INITIALIZATION:
-
-1. Using double quotes (standard strings):
-   message := "Hello\nGo"
-   - Supports escape sequences: \n, \t, \r, etc.
-
-2. Using backticks (raw string literals):
-   rawMessage := `Hello\nGo`
-   - Does NOT interpret escape sequences
-   - Treats everything literally as-is
+STRINGS:
+- Declared with double quotes: "hello" (supports escape sequences)
+- Or backticks: `raw string` (no escape sequences)
+- Immutable - create new strings to "modify"
+- Compared lexicographically (dictionary order)
 
 ESCAPE SEQUENCES:
-- \n = newline (moves to next line, first position)
-- \t = tab (horizontal whitespace)
-- \r = carriage return (cursor to first position, DOES NOT create new line)
-- \\ = backslash
-- \" = double quote
+\n = newline, \t = tab, \r = carriage return, \\ = backslash, \" = quote
 
-HISTORICAL NOTE:
-Old typewriters had two operations:
-1. Line feed (\n) - move to next line
-2. Carriage return (\r) - move cursor to first position
-Modern systems combine these, so \n alone is sufficient.
+RUNES:
+- Type alias for int32 (represents Unicode code point)
+- Declared with single quotes: 'A', '日', '😊'
+- Support any language and emoji
+- Essential for international applications
 
-═══════════════════════════════════════════════════════════════════════════════
+UTF-8:
+- Variable-length encoding (1-4 bytes per character)
+- len() counts bytes, not characters
+- Use utf8.RuneCountInString() for character count
 
-PART 2: RUNES
-
-DEFINITION:
-A rune is an alias for int32 that represents a Unicode code point.
-Runes are used to represent individual characters in a string.
-
-KEY CHARACTERISTICS:
-- Type: int32 (4 bytes of memory)
-- Represents Unicode code points
-- Declared with single quotes: 'A', 'é', '😊'
-- Support characters from multiple languages
-- Can represent Emoji, Japanese, Chinese, etc.
-- Essential for internationalization (i18n)
-
-RUNES VS CHARACTERS (C's char):
-
-SIMILARITIES:
-- Both represent individual characters
-- Both occupy fixed memory
-
-DIFFERENCES:
-- Rune: int32 (4 bytes) - supports Unicode
-- Char (C): typically 1 byte - ASCII only
-- Rune: built-in Unicode support
-- Char (C): requires external libraries for Unicode
-
-═══════════════════════════════════════════════════════════════════════════════
-
-LEXICOGRAPHICAL COMPARISON (Dictionary Order):
-When comparing strings, Go uses ASCII/Unicode values of characters.
-- Uppercase letters have LOWER values than lowercase (A=65, a=97)
-- Shorter string is considered smaller if it's a prefix
-- Example: "app" < "apple" < "apple2"
-
-═══════════════════════════════════════════════════════════════════════════════
+KEY DIFFERENCE: Rune (go) = Unicode support, Char (C) = ASCII only
 */
 
 func main() {
-	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Println("PART 1: STRINGS - DECLARATION AND BASICS")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("PART 1: STRING DECLARATION AND BASICS")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	// STRING DECLARATION
-	message := "Hello\nGo"        // Standard string with escape sequences
-	rawMessage := `Hello\nGo`     // Raw string literal (no escape sequences)
-	messageWithTab := "Hello\tGo" // Tab character
-
-	fmt.Println("Standard string (with escape sequences):")
-	fmt.Println(message)
-	fmt.Println("\nRaw string literal (no escape sequences):")
-	fmt.Println(rawMessage)
-	fmt.Println("\nString with tab:")
-	fmt.Println(messageWithTab)
-
-	// Carriage Return Example
-	messageWithCR := "Hello\rWorld"
-	fmt.Println("\nCarriage Return example (\\r only, no newline):")
-	fmt.Println(messageWithCR)
-	fmt.Println("(Notice: 'World' overwrites 'Hello' from the start)")
-
-	// ─────────────────────────────────────────────────────────────────────────
-
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("STRING LENGTH")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
-
+	// Standard string with escape sequences
 	msg1 := "Hello\nGo"
-	msg2 := "HelloGo"
-	msg3 := `Hello\nGo`
+	fmt.Println("String with \\n (newline):")
+	fmt.Println(msg1)
 
-	fmt.Printf("Length of \"%s\" = %d\n", "Hello\\nGo", len(msg1))
-	fmt.Printf("Length of \"%s\" = %d\n", "HelloGo", len(msg2))
-	fmt.Printf("Length of \"%s\" = %d (backticks treat \\n as 2 chars)\n", `Hello\nGo`, len(msg3))
+	// Raw string (no escape sequences)
+	msg2 := `Hello\nGo`
+	fmt.Println("\nRaw string (backticks, \\n treated literally):")
+	fmt.Println(msg2)
+
+	// With tab
+	msg3 := "Hello\tGo"
+	fmt.Println("\nString with \\t (tab):")
+	fmt.Println(msg3)
+	fmt.Println()
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("STRING INDEXING (Returns Byte Values)")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("STRING LENGTH & INDEXING")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	str := "Hello"
 	fmt.Printf("String: \"%s\"\n", str)
-	fmt.Printf("First character at index 0: %d (ASCII value of 'H')\n", str[0])
-	fmt.Printf("Second character at index 1: %d (ASCII value of 'e')\n", str[1])
-	fmt.Println("\nNote: Indexing returns byte/ASCII values, not characters!")
+	fmt.Printf("Length: %d\n", len(str))
+	fmt.Printf("Index 0: %c (ASCII/byte value: %d)\n", str[0], str[0])
+	fmt.Printf("Index 1: %c (ASCII/byte value: %d)\n\n", str[1], str[1])
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("STRING CONCATENATION")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("STRING CONCATENATION & COMPARISON")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	greeting := "Hello"
 	name := "Alice"
 
-	// Direct concatenation (no space added automatically)
-	result1 := greeting + name
-	fmt.Printf("Direct concatenation: \"%s\"\n", result1)
-	fmt.Println("(No space added automatically)")
-
-	// Concatenation with space
-	result2 := greeting + " " + name
-	fmt.Printf("With manual space: \"%s\"\n", result2)
-
-	// Using Print with commas (adds space automatically)
-	fmt.Println("\nUsing Print with commas (adds space automatically):")
+	fmt.Printf("Concatenation (no space): \"%s\" + \"%s\" = \"%s\"\n", greeting, name, greeting+name)
+	fmt.Printf("With manual space: \"%s\"\n", greeting+" "+name)
+	fmt.Printf("Using Print (auto space): ")
 	fmt.Println(greeting, name)
 
-	// ─────────────────────────────────────────────────────────────────────────
-
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("STRING COMPARISON (Lexicographical Ordering)")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
-
-	str1 := "Apple"
-	str2 := "apple"
-	str3 := "app"
-
-	fmt.Printf("Comparing \"%s\" and \"%s\":\n", str1, str2)
-	fmt.Printf("  \"%s\" < \"%s\": %v\n", str1, str2, str1 < str2)
-	fmt.Println("  (Uppercase 'A' has lower ASCII value than lowercase 'a')")
-
-	fmt.Printf("\nComparing \"%s\" and \"%s\":\n", str3, str1)
-	fmt.Printf("  \"%s\" < \"%s\": %v\n", str3, str1, str3 < str1)
-	fmt.Println("  (Shorter string is smaller if it's a prefix)")
-
-	fmt.Printf("\nComparing \"%s\" and \"%s\":\n", "banana", "apple")
-	fmt.Printf("  \"banana\" > \"apple\": %v\n", "banana" > "apple")
-	fmt.Println("  ('b' > 'a' in ASCII values)")
+	fmt.Println("\nLexicographical comparison:")
+	fmt.Printf("\"Apple\" < \"apple\": %v (uppercase < lowercase)\n", "Apple" < "apple")
+	fmt.Printf("\"app\" < \"apple\": %v (prefix is smaller)\n", "app" < "apple")
+	fmt.Printf("\"banana\" > \"apple\": %v (b > a)\n\n", "banana" > "apple")
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("STRING ITERATION")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("STRING ITERATION & IMMUTABILITY")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	text := "Hello"
-	fmt.Printf("Iterating over string: \"%s\"\n\n", text)
-
-	fmt.Println("Method 1: Using range (gets rune values):")
-	for index, char := range text {
-		fmt.Printf("  Index %d: character '%c' (rune value: %v)\n", index, char, char)
+	fmt.Printf("Iterating over \"%s\" with range:\n", text)
+	for idx, char := range text {
+		fmt.Printf("  Index %d: '%c' (rune: %v)\n", idx, char, char)
 	}
 
-	fmt.Println("\nMethod 2: Hexadecimal values:")
-	for _, char := range text {
-		fmt.Printf("  Character: %c, Hex: 0x%x\n", char, char)
-	}
-
-	// ─────────────────────────────────────────────────────────────────────────
-
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("STRING IMMUTABILITY")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
-
+	fmt.Println("\nImmutability (creating new string):")
 	original := "Hello"
-	fmt.Printf("Original string: \"%s\"\n", original)
-
-	// To modify, create a new string
 	modified := original + " World"
-	fmt.Printf("Modified (new string): \"%s\"\n", modified)
-	fmt.Printf("Original unchanged: \"%s\"\n", original)
-	fmt.Println("\nNote: Strings are IMMUTABLE - operations create new strings!")
+	fmt.Printf("Original: \"%s\"\n", original)
+	fmt.Printf("Modified: \"%s\"\n", modified)
+	fmt.Println("Original unchanged - strings are immutable!\n")
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("PART 2: RUNES - INDIVIDUAL CHARACTERS")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("PART 2: RUNES - UNICODE SUPPORT")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	// RUNE DECLARATION
 	var ch rune = 'A'
-	var japanese rune = '日' // Japanese character for "day"
-	var emoji rune = '😊'    // Smiley emoji
+	var japanese rune = '日' // "day" in Japanese
+	var emoji rune = '😊'    // smiley emoji
 
 	fmt.Println("Rune values (as integers):")
-	fmt.Printf("  'A' = %d\n", ch)
-	fmt.Printf("  '日' (Japanese 'day') = %d\n", japanese)
-	fmt.Printf("  '😊' (emoji) = %d\n", emoji)
+	fmt.Printf("'A': %d (rune/int32)\n", ch)
+	fmt.Printf("'日': %d\n", japanese)
+	fmt.Printf("'😊': %d\n\n", emoji)
 
-	fmt.Println("\nRune values (as characters using %c):")
-	fmt.Printf("  Rune ch: %c\n", ch)
-	fmt.Printf("  Rune japanese: %c\n", japanese)
-	fmt.Printf("  Rune emoji: %c\n", emoji)
-
-	// ─────────────────────────────────────────────────────────────────────────
-
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("RUNE TO STRING CONVERSION")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
-
-	runeChar := 'G'
-	convertedStr := string(runeChar)
-
-	fmt.Printf("Rune: %c (type: rune/int32)\n", runeChar)
-	fmt.Printf("Converted to string: \"%s\" (type: string)\n", convertedStr)
-	fmt.Printf("Type check using %%T format verb: %T\n", convertedStr)
+	fmt.Println("Rune values (as characters):")
+	fmt.Printf("'A': %c\n", ch)
+	fmt.Printf("'日': %c\n", japanese)
+	fmt.Printf("'😊': %c\n\n", emoji)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("UNICODE AND INTERNATIONAL TEXT")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("INTERNATIONAL TEXT & UNICODE")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	englishHello := "Hello"
-	japaneseHello := "こんにちは" // Japanese "hello"
-	spanishHello := "Hola"
-	arabicHello := "مرحبا" // Arabic "hello"
-	chineseHello := "你好"   // Chinese "hello"
+	english := "Hello"
+	japanese_hello := "こんにちは"
+	spanish := "Hola"
+	arabic := "مرحبا"
+	chinese := "你好"
 
-	fmt.Println("Supporting multiple languages:")
-	fmt.Printf("English:  %s\n", englishHello)
-	fmt.Printf("Japanese: %s\n", japaneseHello)
-	fmt.Printf("Spanish:  %s\n", spanishHello)
-	fmt.Printf("Arabic:   %s\n", arabicHello)
-	fmt.Printf("Chinese:  %s\n", chineseHello)
-
-	fmt.Println("\nGo has NATIVE Unicode support - perfect for global applications!")
+	fmt.Println("Multiple languages:")
+	fmt.Printf("English:   %s\n", english)
+	fmt.Printf("Japanese:  %s\n", japanese_hello)
+	fmt.Printf("Spanish:   %s\n", spanish)
+	fmt.Printf("Arabic:    %s\n", arabic)
+	fmt.Printf("Chinese:   %s\n\n", chinese)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("ITERATING OVER RUNES IN INTERNATIONAL TEXT")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("BYTES VS CHARACTERS (UTF-8)")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	japaneseWord := "こんにちは" // "hello" in Japanese
-	fmt.Printf("Iterating over Japanese text: \"%s\"\n\n", japaneseWord)
-
-	for index, runeValue := range japaneseWord {
-		fmt.Printf("Position %d: %c (Unicode: U+%04X, Decimal: %d)\n",
-			index, runeValue, runeValue, runeValue)
-	}
-
-	// ─────────────────────────────────────────────────────────────────────────
-
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("COUNTING RUNES VS BYTES")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
-
-	mixedText := "Hello こんにちは"
+	mixedText := "Hi 日本"
 	byteCount := len(mixedText)
 	runeCount := utf8.RuneCountInString(mixedText)
 
 	fmt.Printf("Text: \"%s\"\n", mixedText)
-	fmt.Printf("Byte count (len()): %d bytes\n", byteCount)
-	fmt.Printf("Rune count (utf8.RuneCountInString()): %d characters\n", runeCount)
-	fmt.Println("\nNote: UTF-8 uses multiple bytes for non-ASCII characters!")
+	fmt.Printf("len(string):            %d bytes\n", byteCount)
+	fmt.Printf("utf8.RuneCountInString: %d characters\n\n", runeCount)
+
+	fmt.Println("Iterating runes in international text:")
+	for idx, rune := range mixedText {
+		fmt.Printf("  Position %d: %c (U+%04X)\n", idx, rune, rune)
+	}
+	fmt.Println()
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("COMPARISON: RUNES vs CHARACTERS (from C)")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("KEY CONCEPTS & BEST PRACTICES")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	fmt.Println(`
-RUNES (Go):                          CHARACTERS (C):
-- Type: int32 (4 bytes)              - Type: char (1 byte)
-- Range: 0 to 1,114,111             - Range: 0 to 255
-- Supports Unicode globally          - ASCII only (mostly)
-- Can handle any language            - Limited to ASCII/extended ASCII
-- Built-in support for i18n          - Needs external libraries
-- Efficient for multilingual apps    - Difficult for non-ASCII text
-
-EXAMPLE DIFFERENCES:
-┌─────────────────┬──────────┬──────────┐
-│ Character       │ Go Rune  │ C char   │
-├─────────────────┼──────────┼──────────┤
-│ 'A'             │ int32: 65│ int8: 65 │
-│ 'é' (e-acute)   │ int32:233│ ❌ Error │
-│ '日' (Japanese) │ int32:26085│ ❌ Error│
-│ '😊' (emoji)    │ int32:128522│ ❌ Error│
-└─────────────────┴──────────┴──────────┘
-
-Go's rune design reflects its philosophy:
-- Simplicity: No need for external libraries
-- Efficiency: Built-in Unicode support
-- Internationalization: Handle global text naturally
-	`)
-
-	// ─────────────────────────────────────────────────────────────────────────
-
-	fmt.Println("\n════════════════════════════════════════════════════════════")
-	fmt.Println("SUMMARY & BEST PRACTICES")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
-
-	fmt.Println(`
-KEY TAKEAWAYS:
-
 STRINGS:
 ✓ Immutable sequences of bytes
-✓ Created with double quotes (with escape sequences) or backticks (raw)
-✓ Concatenate using + operator
-✓ Compare using relational operators (lexicographical order)
-✓ Iterate using range (returns runes, not bytes)
-✓ Get length with len() function
+✓ Double quotes support escape sequences
+✓ Backticks = raw strings (no escapes)
+✓ Concatenate with + operator
+✓ Lexicographical comparison (a < b < c, A < a)
+✓ Iterate with range (returns runes, not bytes)
 
 RUNES:
-✓ Type alias for int32
-✓ Represent Unicode code points
-✓ Declared with single quotes: 'A', '日', '😊'
-✓ Essential for international/multilingual text
-✓ Iterate using range over strings
-✓ Convert to string using string(rune)
+✓ Type int32 for Unicode code points
+✓ Single quotes: 'A', '日', '😊'
+✓ Handle any language naturally
+✓ Essential for internationalization
 
-INTERNATIONALIZATION:
-✓ Go has native, built-in Unicode support
-✓ No external libraries needed for international text
-✓ Easily handle text from any language
-✓ Perfect for global applications
+UTF-8 ENCODING:
+✓ Variable-length: 1-4 bytes per character
+✓ len() = byte count (not character count!)
+✓ utf8.RuneCountInString() = actual characters
+✓ range gives correct rune iteration
 
-STRING OPERATIONS:
-✓ Strings are immutable - create new strings for modifications
-✓ Use + for concatenation or string() for conversion
-✓ Remember: len() counts BYTES, not UTF-8 characters
-✓ Use utf8.RuneCountInString() to count actual characters
+KEY DIFFERENCES:
+Go Rune:         C Char:
+- int32 (Unicode) - byte (ASCII only)
+- Handles all languages - limited to 255 values
+- Perfect for i18n - needs external libraries
 
 BEST PRACTICES:
-✓ Use double quotes for normal strings, backticks for raw strings
-✓ Be aware of escape sequences when using double quotes
-✓ Remember: range over strings gives runes, not individual bytes
-✓ For non-ASCII text, use runes and range iteration
-✓ Count characters with utf8.RuneCountInString(), not len()
-✓ Leverage Go's Unicode support for global applications
-✓ Test with international characters if your app is global
+✓ Use double quotes for normal strings
+✓ Use backticks for raw strings (regex, file paths)
+✓ Remember: range over strings gives runes, not bytes
+✓ Use utf8.RuneCountInString() for character count
+✓ Leverage Go's Unicode support for global apps
+✓ Test with international characters if global
+✓ Be aware UTF-8 uses variable byte lengths
 
-PERFORMANCE:
-✓ Strings are efficient and immutable
-✓ Use strings.Builder for efficient concatenation in loops
-✓ Remember: UTF-8 encoded strings use variable byte lengths
-
-Understanding strings and runes is crucial for writing robust Go applications,
-especially those that need to handle text from multiple languages and regions!
+Go's built-in Unicode support is one of its best features!
 	`)
 }

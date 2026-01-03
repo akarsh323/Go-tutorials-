@@ -3,162 +3,36 @@ package main
 import "fmt"
 
 /*
-Topic 63: STRUCTS - A Comprehensive Guide
+Topic 63: STRUCTS & COMPOSITION
 
-═══════════════════════════════════════════════════════════════════════════════
+CONCEPT: Structs group related data. Composition (embedding) lets you build
+complex types from simpler ones - the Go way instead of inheritance.
 
-WHAT IS A STRUCT?
+STRUCTS:
+- Group related fields together
+- Create custom data types
+- Fields can be exported (Capitalized) or unexported (lowercase)
+- Immutable unless using pointers
 
-A struct is a composite data type that groups multiple data fields together.
-It allows you to create custom data types by combining different types.
+COMPOSITION (THE LEGO APPROACH):
+- Embed structs inside other structs
+- "Car HAS an Engine" (not "Car IS A Engine")
+- More flexible than inheritance
+- Reusable components
 
-Think of a struct like a "blueprint" for creating objects:
-- A house blueprint describes walls, doors, windows, and roof
-- A Person struct describes name, age, email, and address
+FIELD PROMOTION:
+- When embedding struct, fields are "promoted" to outer struct
+- Access: myCar.Horsepower (promoted) or myCar.Engine.Horsepower (explicit)
+- Saves typing, cleaner code
 
-KEY CONCEPTS:
-
-1. FIELDS: Variables inside a struct (also called member variables or attributes)
-2. STRUCT TYPE: The definition/blueprint itself
-3. STRUCT VALUE: An instance created from the blueprint
-4. VISIBILITY: Exported (Capitalized) or Unexported (lowercase) fields
-
-═══════════════════════════════════════════════════════════════════════════════
-
-PART 1: BASIC STRUCT DEFINITION & INITIALIZATION
-
-═════════════════════════════════════════════════════════════════════════════
-
-SYNTAX:
-type StructName struct {
-    FieldName1 FieldType1
-    FieldName2 FieldType2
-    // ...
-}
-
-INITIALIZATION:
-1. Zero Value (all fields get default values):
-   var p Person
-
-2. With Field Names (struct literal):
-   p := Person{Name: "John", Age: 25}
-
-3. With Position (order matters!):
-   p := Person{"John", 25}
-
-4. Partial Initialization:
-   p := Person{Name: "John"}
-   // Age gets its zero value (0)
-
-═════════════════════════════════════════════════════════════════════════════
-
-PART 2: POINTERS TO STRUCTS
-
-═════════════════════════════════════════════════════════════════════════════
-
-Why use pointers to structs?
-- Structs can be large (many fields)
-- Copying large structs is inefficient
-- Use pointers to avoid unnecessary copying
-- Pointers allow modification of original struct
-
-POINTER SYNTAX:
-var ptr *StructName = &instance
-// OR
-ptr := &instance
-
-ACCESSING FIELDS THROUGH POINTER:
-Go automatically dereferences pointers when accessing struct fields!
-- ptr.Field (Go's syntactic sugar)
-- (*ptr).Field (explicit dereferencing, rarely needed)
-
-═════════════════════════════════════════════════════════════════════════════
-
-PART 3: COMPOSITION ("HAS-A" RELATIONSHIP) & FIELD PROMOTION
-
-═════════════════════════════════════════════════════════════════════════════
-
-THE PROBLEM WITH TRADITIONAL INHERITANCE:
-
-In Java, Python, C++:
-- "Car IS A Vehicle" (inheritance)
-- Car inherits all methods and fields automatically
-- Problem: Rigid hierarchy, doesn't work well in practice
-
-THE GO SOLUTION: COMPOSITION
-
-In Go:
-- "Car HAS AN Engine" (composition)
-- You embed one struct inside another
-- You get the fields you need, nothing more
-- More flexible and compositional
-
-THE "LEGO" ANALOGY:
-
-Imagine building with Legos:
-- A simple Lego brick = struct with few fields
-- A complex Lego structure = struct with embedded structs
-- You "snap together" smaller pieces to make larger ones
-- This is COMPOSITION
-
-EXAMPLE: Car has an Engine and Wheels
-
-```
-    Car
-    ├── Model (string)
-    ├── Make (string)
-    ├── Engine (EMBEDDED)
-    │   ├── Horsepower (int)
-    │   └── Type (string)
-    └── Wheels (EMBEDDED)
-        ├── Count (int)
-        └── Brand (string)
-```
-
-═════════════════════════════════════════════════════════════════════════════
-
-FIELD PROMOTION (The "Shortcut")
-
-When you embed a struct, Go automatically "promotes" its fields.
-
-WITHOUT PROMOTION (The Long Way):
-myCar.Engine.Horsepower ✓ Valid, but tedious
-
-WITH PROMOTION (The Promoted Way):
-myCar.Horsepower ✓ Go finds it automatically!
-
-This works because:
-- Engine struct is EMBEDDED (no field name, just the type)
-- Go treats Engine's fields as if they belong to Car directly
-- Saves typing long chains like: car.Engine.Parts.Bolts.Size
-
-IMPORTANT: If Car also had a field named Horsepower, shadowing occurs
-and you must use the explicit way: myCar.Engine.Horsepower
-
-═════════════════════════════════════════════════════════════════════════════
-
-BENEFITS OF COMPOSITION:
-
-1. ORGANIZATION:
-   - Keep Engine logic separate from Car logic
-   - Reusable components (Engine can be used in other vehicles)
-   - Clear separation of concerns
-
-2. CONVENIENCE:
-   - Field promotion saves typing
-   - Don't need deep nesting
-   - Access promoted fields directly
-
-3. FLEXIBILITY:
-   - Easy to add, remove, or change embedded structs
-   - No rigid hierarchy
-   - True composition of parts
-
-═════════════════════════════════════════════════════════════════════════════
+BENEFITS:
+✓ Organization: Keeps related code together
+✓ Reusability: Embed same struct in multiple types
+✓ Clarity: "HAS-A" is clearer than "IS-A"
+✓ No hierarchy problems: Can combine components freely
 */
 
-// PART 1: BASIC STRUCT DEFINITION
-
+// BASIC STRUCTS
 type Person struct {
 	Name  string
 	Age   int
@@ -172,8 +46,7 @@ type Address struct {
 	ZIP    string
 }
 
-// PART 2: COMPOSITION - Inner Structs (Parts)
-
+// COMPOSITION: EMBEDDED STRUCTS
 type Engine struct {
 	Horsepower int
 	Type       string
@@ -186,17 +59,16 @@ type Wheels struct {
 	Size  string
 }
 
-// PART 3: COMPOSITION - Outer Struct (Whole)
-// This struct EMBEDS Engine and Wheels
+// COMPOSED STRUCT
 type Car struct {
 	Make   string
 	Model  string
 	Year   int
-	Engine // EMBEDDED (no field name, just type)
-	Wheels // EMBEDDED (no field name, just type)
+	Engine // EMBEDDED (no field name)
+	Wheels // EMBEDDED (no field name)
 }
 
-// Another example: Employee with embedded Person
+// MULTIPLE COMPOSITION
 type Employee struct {
 	Person     // EMBEDDED
 	EmployeeID int
@@ -205,84 +77,70 @@ type Employee struct {
 }
 
 func main() {
-	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Println("PART 1: BASIC STRUCT DECLARATION & INITIALIZATION")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("PART 1: BASIC STRUCT DECLARATION")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	// Method 1: Zero value (all fields get default values)
-	fmt.Println("Method 1: Zero Value Initialization")
-	var person1 Person
-	fmt.Printf("Zero value: %+v\n\n", person1)
+	// Zero value (all fields get default values)
+	var p1 Person
+	fmt.Println("Zero value:", p1)
 
-	// Method 2: Named field initialization
-	fmt.Println("Method 2: Named Field Initialization")
-	person2 := Person{
-		Name:  "John Doe",
+	// Named field initialization
+	p2 := Person{
+		Name:  "Alice",
 		Age:   30,
-		Email: "john@example.com",
+		Email: "alice@example.com",
 	}
-	fmt.Printf("person2: %+v\n\n", person2)
+	fmt.Printf("Named fields: %+v\n", p2)
 
-	// Method 3: Positional initialization (order matters!)
-	fmt.Println("Method 3: Positional Initialization")
-	person3 := Person{"Alice", 28, "alice@example.com"}
-	fmt.Printf("person3: %+v\n\n", person3)
-
-	// Method 4: Partial initialization
-	fmt.Println("Method 4: Partial Initialization")
-	person4 := Person{Name: "Bob", Email: "bob@example.com"}
-	// Age gets zero value (0)
-	fmt.Printf("person4: %+v\n\n", person4)
+	// Positional initialization (order matters!)
+	p3 := Person{"Bob", 25, "bob@example.com"}
+	fmt.Printf("Positional: %+v\n\n", p3)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Println("PART 2: ACCESSING & MODIFYING STRUCT FIELDS")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("PART 2: ACCESSING & MODIFYING FIELDS")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	person := Person{Name: "Jane", Age: 25, Email: "jane@example.com"}
-
-	fmt.Println("Original struct:")
-	fmt.Printf("Name: %s, Age: %d, Email: %s\n\n", person.Name, person.Age, person.Email)
+	person := Person{Name: "Charlie", Age: 35, Email: "charlie@example.com"}
+	fmt.Printf("Original: Name=%s, Age=%d\n", person.Name, person.Age)
 
 	// Modify fields
-	person.Age = 26
-	person.Email = "jane.updated@example.com"
-
-	fmt.Println("After modification:")
-	fmt.Printf("Name: %s, Age: %d, Email: %s\n\n", person.Name, person.Age, person.Email)
+	person.Age = 36
+	person.Email = "charlie.new@example.com"
+	fmt.Printf("Modified: Name=%s, Age=%d\n", person.Name, person.Age)
+	fmt.Printf("          Email=%s\n\n", person.Email)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
+	fmt.Println("═══════════════════════════════════════════════════════════")
 	fmt.Println("PART 3: POINTERS TO STRUCTS")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	original := Person{Name: "Charlie", Age: 35, Email: "charlie@example.com"}
+	original := Person{Name: "David", Age: 40, Email: "david@example.com"}
 	fmt.Println("Original:", original)
 
-	// Create a pointer to the struct
+	// Create pointer
 	ptr := &original
-	fmt.Printf("Pointer value: %p\n", ptr)
-	fmt.Printf("Dereferenced: %+v\n\n", *ptr)
+	fmt.Printf("Pointer: %p\n", ptr)
 
-	// Modify through pointer (Go auto-dereferences for fields!)
-	fmt.Println("Modifying through pointer:")
-	ptr.Name = "Charles"
-	ptr.Age = 36
+	// Go auto-dereferences for struct fields!
+	ptr.Name = "Dave"
+	ptr.Age = 41
 
-	fmt.Println("Original after modification:", original)
-	fmt.Println("(Original was modified because pointer points to it)\n")
+	fmt.Println("After modification through pointer:")
+	fmt.Println("Original struct changed:", original)
+	fmt.Println("(Pointer points to original, changes affect it)\n")
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
+	fmt.Println("═══════════════════════════════════════════════════════════")
 	fmt.Println("PART 4: COMPOSITION - THE LEGO APPROACH")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	fmt.Println("CONCEPT: Car HAS-AN Engine and HAS Wheels\n")
+	fmt.Println("Creating a Car with embedded Engine and Wheels:\n")
 
-	// Create a Car with embedded Engine and Wheels
 	myCar := Car{
 		Make:  "Tesla",
 		Model: "Model S",
@@ -290,7 +148,7 @@ func main() {
 		Engine: Engine{
 			Horsepower: 1020,
 			Type:       "Electric",
-			Cylinders:  0, // Electric cars have no cylinders
+			Cylinders:  0,
 		},
 		Wheels: Wheels{
 			Count: 4,
@@ -299,52 +157,44 @@ func main() {
 		},
 	}
 
-	fmt.Printf("Car created: %d %s %s\n\n", myCar.Year, myCar.Make, myCar.Model)
+	fmt.Printf("Car: %d %s %s\n", myCar.Year, myCar.Make, myCar.Model)
+	fmt.Printf("Engine: %d HP, %s, %d cylinders\n", myCar.Engine.Horsepower, myCar.Engine.Type, myCar.Engine.Cylinders)
+	fmt.Printf("Wheels: %d wheels, %s, %s\n\n", myCar.Wheels.Count, myCar.Wheels.Brand, myCar.Wheels.Size)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
+	fmt.Println("═══════════════════════════════════════════════════════════")
 	fmt.Println("PART 5: FIELD PROMOTION (THE SHORTCUT)")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	fmt.Println("Accessing fields through embedded structs:\n")
+	fmt.Println("Explicit way (through embedded struct):")
+	fmt.Printf("myCar.Engine.Horsepower: %d HP\n", myCar.Engine.Horsepower)
+	fmt.Printf("myCar.Wheels.Brand:      %s\n\n", myCar.Wheels.Brand)
 
-	// THE EXPLICIT WAY (always valid)
-	fmt.Println("EXPLICIT WAY (accessing through the embedded struct):")
-	fmt.Printf("Engine Horsepower (explicit): %d HP\n", myCar.Engine.Horsepower)
-	fmt.Printf("Engine Type (explicit): %s\n", myCar.Engine.Type)
-	fmt.Printf("Wheels Count (explicit): %d\n", myCar.Wheels.Count)
-	fmt.Printf("Wheels Brand (explicit): %s\n\n", myCar.Wheels.Brand)
+	fmt.Println("Promoted way (Go's convenience feature):")
+	fmt.Printf("myCar.Horsepower (promoted): %d HP\n", myCar.Horsepower)
+	fmt.Printf("myCar.Brand (promoted):      %s\n\n", myCar.Brand)
 
-	// THE PROMOTED WAY (Go's convenience feature)
-	fmt.Println("PROMOTED WAY (field promotion - Go's syntactic sugar):")
-	fmt.Printf("Horsepower (promoted): %d HP\n", myCar.Horsepower)
-	fmt.Printf("Type (promoted): %s\n", myCar.Type)
-	fmt.Printf("Count (promoted): %d\n", myCar.Count)
-	fmt.Printf("Brand (promoted): %s\n\n", myCar.Brand)
-
-	fmt.Println("✓ Both ways work! Go automatically promotes embedded fields.")
-	fmt.Println("  The promoted way is more convenient and cleaner.\n")
+	fmt.Println("✓ Both ways work! Promoted fields are cleaner.")
+	fmt.Println("✓ Promoted: direct access without nesting\n")
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
+	fmt.Println("═══════════════════════════════════════════════════════════")
 	fmt.Println("PART 6: MODIFYING PROMOTED FIELDS")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
-	fmt.Println("Original Horsepower:", myCar.Horsepower)
-
-	// Modify using promoted field
+	fmt.Printf("Original Horsepower: %d\n", myCar.Horsepower)
 	myCar.Horsepower = 900
-	fmt.Println("After modification:", myCar.Horsepower)
-	fmt.Println("Verified through explicit access:", myCar.Engine.Horsepower)
+	fmt.Printf("Modified Horsepower: %d\n", myCar.Horsepower)
+	fmt.Printf("Verified (explicit):  %d\n", myCar.Engine.Horsepower)
 	fmt.Println("(Both refer to the same field!)\n")
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Println("PART 7: MULTIPLE COMPOSITION - EMPLOYEE EXAMPLE")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("PART 7: MULTIPLE COMPOSITION (EMPLOYEE)")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	emp := Employee{
 		Person: Person{
@@ -358,117 +208,109 @@ func main() {
 	}
 
 	fmt.Println("Employee Information:")
-	fmt.Printf("Name (promoted): %s\n", emp.Name)
-	fmt.Printf("Age (promoted): %d\n", emp.Age)
-	fmt.Printf("Email (promoted): %s\n", emp.Email)
-	fmt.Printf("Employee ID: %d\n", emp.EmployeeID)
-	fmt.Printf("Department: %s\n", emp.Department)
-	fmt.Printf("Salary: $%.2f\n\n", emp.Salary)
-
-	fmt.Println("Comparison:")
-	fmt.Printf("Explicit way: emp.Person.Name = %s\n", emp.Person.Name)
-	fmt.Printf("Promoted way: emp.Name = %s\n", emp.Name)
-	fmt.Println("(Same field, cleaner syntax!)\n")
+	fmt.Printf("Name (promoted):       %s\n", emp.Name)
+	fmt.Printf("Age (promoted):        %d\n", emp.Age)
+	fmt.Printf("Email (promoted):      %s\n", emp.Email)
+	fmt.Printf("Employee ID:           %d\n", emp.EmployeeID)
+	fmt.Printf("Department:            %s\n", emp.Department)
+	fmt.Printf("Salary:                $%.2f\n\n", emp.Salary)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Println("PART 8: COMPOSITION BENEFITS VISUALIZATION")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("COMPOSITION VS INHERITANCE COMPARISON")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	fmt.Println(`
-TRADITIONAL INHERITANCE (Java, C++, Python):
-Car
-  ├── Vehicle (inherited)
-  │   ├── Speed
-  │   ├── Direction
-  │   └── Drive() method
-  ├── Engine (inherited)
-  └── ...
-Problem: Rigid hierarchy, multiple inheritance conflicts, "Fragile Base Class"
+INHERITANCE (Traditional):
+- "IS A" relationship (Car IS A Vehicle)
+- Rigid hierarchy
+- Diamond problem (multiple inheritance conflicts)
+- All methods from parent inherited
+- Difficult to customize
 
-GO COMPOSITION (Lego Blocks):
-Car
-  ├── Make (string)
-  ├── Model (string)
-  ├── Engine (EMBEDDED)
-  │   ├── Horsepower (int)
-  │   ├── Type (string)
-  │   └── Methods on Engine...
-  └── Wheels (EMBEDDED)
-      ├── Count (int)
-      ├── Brand (string)
-      └── Methods on Wheels...
+COMPOSITION (Go's Approach):
+- "HAS A" relationship (Car HAS AN Engine)
+- Flexible and modular
+- Mix and match components freely
+- Only include what you need
+- Easy to understand and maintain
 
-Benefits:
-✓ Organization: Engine logic separate from Car logic
-✓ Reusability: Engine can be embedded in Truck, Motorcycle, etc.
-✓ Flexibility: Easy to add/remove/change components
-✓ Clarity: "Car HAS an Engine" is clearer than "Car IS-A Engine"
-✓ No conflicts: Easily handle multiple similar components
-`)
+WHY COMPOSITION IS BETTER:
+
+1. FLEXIBILITY:
+   Inheritance = fixed hierarchy
+   Composition = mix any components
+
+2. REUSABILITY:
+   Inheritance = tight coupling to parent
+   Composition = Engine used in Car, Truck, Motorcycle
+
+3. SIMPLICITY:
+   Inheritance = complex rules and conflicts
+   Composition = clear "HAS A" structure
+
+4. EXTENSIBILITY:
+   Inheritance = override methods (complexity)
+   Composition = add new components (simplicity)
+
+REAL EXAMPLE:
+  Car HAS Engine + HAS Wheels
+  Truck HAS Engine + HAS Wheels + HAS Bed
+  Motorcycle HAS Engine + HAS Wheels
+
+  No need for inheritance hierarchy!
+  Just compose what you need!
+	`)
 
 	// ─────────────────────────────────────────────────────────────────────────
 
-	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Println("PART 9: BEST PRACTICES & SUMMARY TABLE")
-	fmt.Println("════════════════════════════════════════════════════════════\n")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("KEY CONCEPTS & BEST PRACTICES")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
 
 	fmt.Println(`
-STRUCT DEFINITION GUIDELINES:
-
-✓ Use descriptive field names (not x, y, z unless context is clear)
-✓ Export fields that need to be accessible outside package (Capitalize)
-✓ Keep unexported fields for internal use only (lowercase)
+STRUCT BASICS:
 ✓ Group related fields together
+✓ Exported (Capitalized) = public, Unexported (lowercase) = private
+✓ Immutable unless using pointers
+✓ Multiple initialization methods (zero, named, positional)
+
+COMPOSITION:
+✓ Embed struct inside another (no field name, just type)
+✓ "Car HAS Engine" not "Car IS Engine"
+✓ More flexible than inheritance
+✓ Highly reusable components
+
+FIELD PROMOTION:
+✓ Promoted fields accessible directly on outer struct
+✓ Explicit access also always works
+✓ Saves typing and improves readability
+✓ Go automatically finds promoted fields
+
+POINTERS TO STRUCTS:
+✓ Use & to get address of struct
+✓ Go auto-dereferences for field access (ptr.Field works)
+✓ Necessary for large structs (avoid copying)
+✓ Required if you want to modify struct
+
+BEST PRACTICES:
 ✓ Use composition over inheritance
+✓ Keep related data in structs
+✓ Export only fields that need to be public
+✓ Use pointers for large structs
 ✓ Embed structs for code reuse
-✓ Use pointers for large structs (avoid copying)
+✓ Document which fields are important
+✓ Initialize all fields (or use zero values)
+✓ Group related fields together logically
 
-WHEN TO USE STRUCTS:
+NAMING CONVENTIONS:
+✓ Type names: Capitalized (Person, Car)
+✓ Exported fields: Capitalized (Name, Age)
+✓ Unexported fields: lowercase (privateData)
+✓ Constructors: NewTypeName() (NewCar())
+✓ Methods: normal function names
 
-✓ Grouping related data together
-✓ Creating custom data types
-✓ Building complex objects from simpler ones (composition)
-✓ Organizing code into logical units
-✓ Preparing data for JSON marshaling
-✓ Creating domain models
-
-COMPOSITION VS INHERITANCE:
-
-┌────────────────┬──────────────────────────────┬──────────────────────────┐
-│ Aspect         │ Inheritance (Traditional)    │ Composition (Go)         │
-├────────────────┼──────────────────────────────┼──────────────────────────┤
-│ Relationship   │ IS-A (Car IS-A Vehicle)      │ HAS-A (Car HAS-A Engine) │
-│ Flexibility    │ Rigid hierarchy              │ Flexible building blocks │
-│ Complexity     │ Can be complex               │ Simple and clear         │
-│ Reusability    │ Limited (tied to hierarchy)  │ High (use anywhere)      │
-│ Conflicts      │ Diamond problem, ambiguity   │ None, explicit           │
-│ Go Support     │ Not directly supported       │ Primary approach         │
-└────────────────┴──────────────────────────────┴──────────────────────────┘
-
-FIELD PROMOTION RULES:
-
-1. Only works with EMBEDDED structs (no field name)
-2. Promoted fields are ACCESSIBLE but not SHADOWED
-3. If conflict exists, explicit access is required
-4. Saves typing for commonly accessed fields
-5. Makes code more readable and cleaner
-
-MEMORY CONSIDERATIONS:
-
-- Structs are VALUE types (not references)
-- Assignment copies entire struct
-- Use pointers for large structs
-- Embedded structs increase memory footprint (union-like, not inheritance)
-- Pointers reduce copying overhead
-
-NEXT STEP:
-
-The next logical progression:
-Basic Structs (storing data) → Composition (organizing data) → Methods (adding behavior)
-
-After methods, you'll learn about INTERFACES, which is where Go becomes truly powerful
-by allowing different types to interact based on their behavior, not their inheritance chain.
-`)
+The beauty of composition: build complex systems from simple, reusable parts!
+	`)
 }
