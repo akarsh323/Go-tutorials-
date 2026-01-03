@@ -312,6 +312,21 @@ func main() {
 	fmt.Println("SUMMARY & BEST PRACTICES")
 	fmt.Println("════════════════════════════════════════════════════════════\n")
 
+	fmt.Println("DETAILED FORMATTING VERBS TABLE:")
+	fmt.Println("┌────────────┬─────────────────────────┬──────────────┬─────────────┐")
+	fmt.Println("│ Verb       │ Description             │ Example      │ Output      │")
+	fmt.Println("├────────────┼─────────────────────────┼──────────────┼─────────────┤")
+	fmt.Println("│ %v         │ Default Value           │ 15           │ 15          │")
+	fmt.Println("│ %T         │ Type                    │ 15           │ int         │")
+	fmt.Println("│ %d         │ Decimal (Base 10)       │ 15           │ 15          │")
+	fmt.Println("│ %b         │ Binary (Base 2)         │ 15           │ 1111        │")
+	fmt.Println("│ %x         │ Hex (Base 16)           │ 15           │ f           │")
+	fmt.Println("│ %f         │ Float (Default)         │ 15.5         │ 15.500000   │")
+	fmt.Println("│ %.2f       │ Float (Precision)       │ 15.5         │ 15.50       │")
+	fmt.Println("│ %q         │ Quoted String           │ \"Hi\"        │ \"Hi\"      │")
+	fmt.Println("│ %t         │ Boolean                 │ true         │ true        │")
+	fmt.Println("└────────────┴─────────────────────────┴──────────────┴─────────────┘\n")
+
 	fmt.Println(`
 QUICK REFERENCE TABLE:
 
