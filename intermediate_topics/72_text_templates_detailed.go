@@ -1,152 +1,367 @@
-package intermediate
+package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
 	"text/template"
 )
 
-// Topic 72: text_templates
-// Deep dive into Why Go Templates look the way they do.
+// Topic 72: text_templates - Complete Breakdown
+// =============================================
+// Separates CONCEPT (The "What") from CODE (The "How")
+//
 // Covers:
-// Part 1: Basic templates with dot notation
-// Part 2: Conditionals - Function-call syntax (Why "ge" instead of ">=")
-// Part 3: Loops and the Shape-Shifting Dot
-// Part 4: CLI Architecture - Vending Machine Pattern
+// Part 1: The Basics - Simple Substitution (Template holes + data)
+// Part 2: Logic inside Templates - If/Else with interface{}
+// Part 3: Loops - Range with the Shape-Shifting Dot
+// Part 4: The CLI Menu App - Architecture with template storage
+// Part 5: Key Terms Reference - os.Stdout, bytes.Buffer, FuncMap, {{with}}
 
 func main() {
-	fmt.Println("=== 72 TEXT TEMPLATES: Deep Dive ===\n")
+	fmt.Println("=== 72 TEXT TEMPLATES: Complete Breakdown ===\n")
 
 	// ============================================================
-	// PART 1: Basics - Template Variables
+	// PART 1: THE BASICS - Simple Substitution
 	// ============================================================
-	fmt.Println("PART 1: Basics - Template Variables")
-	fmt.Println("=====================================\n")
-
-	// Basic template with field access
-	tmpl1 := template.Must(template.New("greet").Parse("Hello {{.Name}}!\n"))
-	tmpl1.Execute(os.Stdout, map[string]string{"Name": "Gopher"})
-
-	// Template with multiple fields
-	tmpl2 := template.Must(template.New("person").Parse(
-		"Name: {{.Name}}, Age: {{.Age}}, City: {{.City}}\n"))
-	person := map[string]interface{}{
-		"Name": "Alice",
-		"Age":  30,
-		"City": "NYC",
-	}
-	tmpl2.Execute(os.Stdout, person)
+	part1Basics()
 
 	// ============================================================
-	// PART 2: Conditionals - Why "ge .Age 18" instead of ".Age >= 18"?
+	// PART 2: LOGIC INSIDE TEMPLATES - If/Else
 	// ============================================================
-	fmt.Println("\n\nPART 2: Conditionals - Function-Call Syntax")
-	fmt.Println("==============================================\n")
-
-	fmt.Println("📌 The Analogy: Function Calls")
-	fmt.Println("In most languages: if Age >= 18 { ... }")
-	fmt.Println("In Go Templates:   {{if ge .Age 18}} ... {{end}}")
-	fmt.Println()
-	fmt.Println("Think of 'ge' not as a SYMBOL, but as a FUNCTION NAME.")
-	fmt.Println("ge(Age, 18) is how the template engine reads it.\n")
-
-	// Visual comparison table
-	fmt.Println("📊 Code Translation Table:")
-	fmt.Println("Normal Logic       | Go Template Logic | Meaning")
-	fmt.Println("================== | ================= | ===================")
-	fmt.Println("if Age == 18       | {{if eq .Age 18}} | eq = Equal")
-	fmt.Println("if Age != 18       | {{if ne .Age 18}} | ne = Not Equal")
-	fmt.Println("if Age < 18        | {{if lt .Age 18}} | lt = Less Than")
-	fmt.Println("if Age <= 18       | {{if le .Age 18}} | le = Less or Equal")
-	fmt.Println("if Age > 18        | {{if gt .Age 18}} | gt = Greater Than")
-	fmt.Println("if Age >= 18       | {{if ge .Age 18}} | ge = Greater or Equal")
-	fmt.Println()
-
-	// Live example of conditionals
-	fmt.Println("🔄 Live Example of Conditionals:\n")
-	tmpl3 := template.Must(template.New("age").Parse(
-		"{{.Name}} is {{if ge .Age 18}}an adult{{else}}a minor{{end}}\n"))
-	tmpl3.Execute(os.Stdout, map[string]interface{}{
-		"Name": "Bob",
-		"Age":  25,
-	})
-	tmpl3.Execute(os.Stdout, map[string]interface{}{
-		"Name": "Charlie",
-		"Age":  10,
-	})
-
-	fmt.Println("\nHow it works:")
-	fmt.Println("  - ge is a FUNCTION: ge(25, 18) → true")
-	fmt.Println("  - ge is a FUNCTION: ge(10, 18) → false")
-	fmt.Println("  - Template engine reads left-to-right")
-	fmt.Println("  - Grabs .Age, grabs 18, calls ge() with those arguments\n")
+	part2LogicConditionals()
 
 	// ============================================================
-	// PART 3: Loops - The Shape-Shifting Dot (The Spotlight Analogy)
+	// PART 3: LOOPS - Range with Shape-Shifting Dot
 	// ============================================================
-	fmt.Println("\n\nPART 3: Loops - The Shape-Shifting Dot")
-	fmt.Println("=========================================\n")
+	part3Loops()
 
-	fmt.Println("🎯 The Spotlight Analogy:")
-	fmt.Println("Imagine the Dot '.' is a spotlight that shines on your data.\n")
+	// ============================================================
+	// PART 4: THE CLI MENU APP - Complete Architecture
+	// ============================================================
+	part4CLIMenuApp()
 
-	fmt.Println("BEFORE the loop:")
-	fmt.Println("  The spotlight shines on the ENTIRE MAP.")
-	fmt.Println("  You can access: {{.Items}}, {{.User}}, {{.Details}}")
-	fmt.Println()
+	// ============================================================
+	// PART 5: KEY TERMS REFERENCE
+	// ============================================================
+	part5KeyTermsReference()
+}
 
-	fmt.Println("INSIDE the loop:")
-	fmt.Println("  The spotlight MOVES!")
-	fmt.Println("  Now it shines ONLY on the CURRENT ITEM.")
-	fmt.Println("  {{.}} refers to the individual item, NOT the map.")
-	fmt.Println()
+// ============================================================
+// PART 1: THE BASICS - Simple Substitution
+// ============================================================
 
-	fmt.Println("WHY THIS MATTERS:")
-	fmt.Println("  If you tried {{.Items}} INSIDE the loop, it would crash!")
-	fmt.Println("  Why? Because 'apple' (the current item) has no 'Items' field.")
-	fmt.Println("  The spotlight has moved away from the outer map.\n")
+func part1Basics() {
+	fmt.Println("\n" + strings.Repeat("=", 70))
+	fmt.Println("PART 1: THE BASICS - Simple Substitution")
+	fmt.Println(strings.Repeat("=", 70) + "\n")
 
-	// Visual diagram
-	fmt.Println("📊 Visual Diagram of the Spotlight:\n")
+	fmt.Println("📌 THE CONCEPT (The 'What'):")
+	fmt.Println("============================")
 	fmt.Println(`
-Data Structure:
-  {
-    "Name": "Alice",
-    "Items": ["Apple", "Banana", "Cherry"]
-  }
+You have a TEMPLATE with "holes" in it.
+You fill those holes with DATA.
 
-Outside the loop (spotlight on entire map):
-  {{.Name}}         → "Alice" ✓
-  {{.Items}}        → ["Apple", "Banana", "Cherry"] ✓
+Template (The Blueprint):
+  "Hello {{.Name}}!"
+   
+  The {{.Name}} is the "hole" we will fill.
 
-{{range .Items}}
-  Inside the loop (spotlight on current item):
-  {{.}}             → "Apple" (or "Banana", or "Cherry") ✓
-  {{.Items}}        → ✗ CRASH! String has no "Items" field
-  {{.Name}}         → ✗ CRASH! String has no "Name" field
-{{end}}
+Data (The Filler):
+  {"Name": "Gopher"}
+  
+  A map where "Name" is the key.
 
-After the loop (spotlight returns to map):
-  {{.Name}}         → "Alice" ✓
-  {{.Items}}        → ["Apple", "Banana", "Cherry"] ✓
+Result (After filling the hole):
+  "Hello Gopher!"
 `)
 
-	// Live example of loops
-	fmt.Println("🔄 Live Example of Loops:\n")
-	tmpl4 := template.Must(template.New("list").Parse(
-		`Items: {{range .Items}}{{.}} {{end}}`))
-	fmt.Println("Output: ")
-	tmpl4.Execute(os.Stdout, map[string][]string{
-		"Items": {"apple", "banana", "cherry"},
-	})
-	fmt.Println("\n")
+	fmt.Println("\n📝 THE CODE (The 'How'):")
+	fmt.Println("=========================\n")
 
-	// Advanced example: nested data with dot context
-	fmt.Println("Advanced Example: Nested Data\n")
-	tmpl7 := template.Must(template.New("nested").Parse(
-		`User: {{.User}}, {{with .Details}}Email: {{.Email}}, Phone: {{.Phone}}{{end}}`))
+	fmt.Println("Step 1: Create the template with the blueprint")
+	code1 := `
+	tmpl := template.Must(
+		template.New("greet").Parse("Hello {{.Name}}!\n"),
+	)
+	`
+	fmt.Println(code1)
+
+	fmt.Println("Step 2: Prepare the data (the filler)")
+	code2 := `
+	data := map[string]string{"Name": "Gopher"}
+	`
+	fmt.Println(code2)
+
+	fmt.Println("Step 3: Execute (fill the hole and print)")
+	code3 := `
+	tmpl.Execute(os.Stdout, data)
+	`
+	fmt.Println(code3)
+
+	fmt.Println("🔄 LIVE EXECUTION:\n")
+
+	// 1. Create template
+	tmpl1 := template.Must(template.New("greet").Parse("Hello {{.Name}}!\n"))
+
+	// 2. Prepare data
+	data := map[string]string{"Name": "Gopher"}
+
+	// 3. Execute
+	tmpl1.Execute(os.Stdout, data)
+
+	fmt.Println("\n💡 TEACHER'S EXPLANATION:")
+	fmt.Println("=========================")
+	fmt.Println(`
+template.Must(...):
+  - A safety wrapper around template parsing
+  - If you have a typo in your template, CRASH IMMEDIATELY
+  - Better to fail at startup than silently produce wrong output
+
+{{.Name}}:
+  - The dot (.) represents YOUR DATA OBJECT
+  - .Name means: "Look in the data and get the value of the 'Name' field"
+  - If data = {"Name": "Alice"}, then {{.Name}} becomes "Alice"
+`)
+
+	fmt.Println("\n✅ KEY TAKEAWAY:")
+	fmt.Println("Templates are just text with variables. Dot notation accesses map fields.\n")
+}
+
+// ============================================================
+// PART 2: LOGIC INSIDE TEMPLATES - If/Else
+// ============================================================
+
+func part2LogicConditionals() {
+	fmt.Println("\n" + strings.Repeat("=", 70))
+	fmt.Println("PART 2: LOGIC INSIDE TEMPLATES - If/Else")
+	fmt.Println(strings.Repeat("=", 70) + "\n")
+
+	fmt.Println("📌 THE CONCEPT (The 'What'):")
+	fmt.Println("============================")
+	fmt.Println(`
+Templates aren't just text substitution; they can make DECISIONS.
+
+The Decision:
+  "If someone's age is >= 18, call them an adult. Otherwise, a minor."
+
+In Go, you can't write: if .Age >= 18 (that's not template syntax)
+Instead, you write: if ge .Age 18 (function-call style)
+
+Why "ge"? It's a FUNCTION, not a SYMBOL.
+  - ge = "greater than or equal"
+  - Think of it as: ge(.Age, 18) → returns true or false
+`)
+
+	fmt.Println("\n📝 THE CODE (The 'How'):")
+	fmt.Println("=========================\n")
+
+	fmt.Println("Step 1: Create a template with conditional logic")
+	code1 := `
+	text := "{{.Name}} is {{if ge .Age 18}}an adult{{else}}a minor{{end}}"
+	tmpl := template.Must(template.New("age").Parse(text))
+	`
+	fmt.Println(code1)
+
+	fmt.Println("Step 2: Prepare data with MIXED TYPES (String + Integer)")
+	code2 := `
+	// We use map[string]interface{} because our map needs:
+	//   - "Name" (a String)
+	//   - "Age" (an Integer)
+	// A normal map[string]string can only hold Strings!
+	
+	user := map[string]interface{}{
+		"Name": "Bob",
+		"Age":  25,
+	}
+	`
+	fmt.Println(code2)
+
+	fmt.Println("Step 3: Execute")
+	code3 := `
+	tmpl.Execute(os.Stdout, user)
+	`
+	fmt.Println(code3)
+
+	fmt.Println("🔄 LIVE EXECUTION:\n")
+
+	tmpl2 := template.Must(template.New("age").Parse(
+		"{{.Name}} is {{if ge .Age 18}}an adult{{else}}a minor{{end}}\n"))
+
+	user1 := map[string]interface{}{
+		"Name": "Bob",
+		"Age":  25,
+	}
+
+	user2 := map[string]interface{}{
+		"Name": "Charlie",
+		"Age":  10,
+	}
+
+	tmpl2.Execute(os.Stdout, user1)
+	tmpl2.Execute(os.Stdout, user2)
+
+	fmt.Println("\n💡 TEACHER'S EXPLANATION:")
+	fmt.Println("=========================")
+	fmt.Println(`
+Why map[string]interface{} and not map[string]string?
+
+map[string]string = "All values must be strings"
+  {"Name": "Bob", "Age": "25"}  ✓ Works (Age is a string "25")
+  
+map[string]interface{} = "Values can be ANYTHING"
+  {"Name": "Bob", "Age": 25}  ✓ Works (Age is an integer 25)
+  {"Name": "Bob", "Age": "25"}  ✓ Also works (Age is a string "25")
+
+INTERFACE{} = "I don't care what type you are, just be something"
+
+Why does this matter in templates?
+  - When comparing with ge, we need the ACTUAL NUMBER 25, not the string "25"
+  - The template engine is smarter when you give it the real type
+
+Template Comparison Functions (NOT math symbols):
+  eq  → equal
+  ne  → not equal
+  lt  → less than
+  le  → less or equal
+  gt  → greater than
+  ge  → greater or equal
+  and → logical AND
+  or  → logical OR
+`)
+
+	fmt.Println("Comparison Table:")
+	fmt.Println("=================")
+	fmt.Println("Normal Code     | Template Code   | Reads As")
+	fmt.Println("=============== | =============== | ================")
+	fmt.Println("if Age == 18    | if eq .Age 18   | eq(Age, 18)")
+	fmt.Println("if Age != 18    | if ne .Age 18   | ne(Age, 18)")
+	fmt.Println("if Age < 18     | if lt .Age 18   | lt(Age, 18)")
+	fmt.Println("if Age <= 18    | if le .Age 18   | le(Age, 18)")
+	fmt.Println("if Age > 18     | if gt .Age 18   | gt(Age, 18)")
+	fmt.Println("if Age >= 18    | if ge .Age 18   | ge(Age, 18)")
+
+	fmt.Println("\n✅ KEY TAKEAWAY:")
+	fmt.Println("Use map[string]interface{} for mixed types. Conditionals use function-call syntax.\n")
+}
+
+// ============================================================
+// PART 3: LOOPS - Range with Shape-Shifting Dot
+// ============================================================
+
+func part3Loops() {
+	fmt.Println("\n" + strings.Repeat("=", 70))
+	fmt.Println("PART 3: LOOPS - Range with Shape-Shifting Dot")
+	fmt.Println(strings.Repeat("=", 70) + "\n")
+
+	fmt.Println("📌 THE CONCEPT (The 'What'):")
+	fmt.Println("============================")
+	fmt.Println(`
+If you have a LIST of items (like a shopping cart), you need to LOOP through each one.
+
+The Spotlight Analogy:
+  The Dot (.) is like a spotlight shining on your data.
+
+BEFORE the loop:
+  The spotlight shines on the ENTIRE DATA MAP.
+  You can access: {{.Items}}, {{.User}}, {{.Details}}
+
+INSIDE the loop ({{range .Items}}):
+  The spotlight MOVES!
+  Now it shines ONLY on the CURRENT ITEM.
+  {{.}} refers to the individual item (e.g., "apple"), NOT the map.
+
+AFTER the loop ({{end}}):
+  The spotlight returns to the outer map.
+  You can access: {{.Items}}, {{.User}}, {{.Details}} again
+`)
+
+	fmt.Println("\n📝 THE CODE (The 'How'):")
+	fmt.Println("=========================\n")
+
+	fmt.Println("Step 1: Create a template with a loop")
+	code1 := `
+	text := "Items: {{range .Items}}{{.}} {{end}}"
+	tmpl := template.Must(template.New("list").Parse(text))
+	`
+	fmt.Println(code1)
+
+	fmt.Println("Step 2: Prepare data with a SLICE")
+	code2 := `
+	data := map[string][]string{
+		"Items": {"apple", "banana", "cherry"},
+	}
+	`
+	fmt.Println(code2)
+
+	fmt.Println("Step 3: Execute")
+	code3 := `
+	tmpl.Execute(os.Stdout, data)
+	`
+	fmt.Println(code3)
+
+	fmt.Println("🔄 LIVE EXECUTION:\n")
+
+	tmpl3 := template.Must(template.New("list").Parse(
+		"Items: {{range .Items}}{{.}} {{end}}\n"))
+
+	data3 := map[string][]string{
+		"Items": {"apple", "banana", "cherry"},
+	}
+
+	tmpl3.Execute(os.Stdout, data3)
+
+	fmt.Println("\n💡 TEACHER'S EXPLANATION:")
+	fmt.Println("=========================")
+	fmt.Println(`
+{{range .Items}} - Start the loop
+  For every single item in the Items list, do what's inside this block.
+
+{{.}} - The current item (spotlight focus)
+  - First iteration: {{.}} = "apple"
+  - Second iteration: {{.}} = "banana"
+  - Third iteration: {{.}} = "cherry"
+
+{{end}} - Stop the loop
+  When the loop is finished, restore the original spotlight position.
+
+⚠️  CRITICAL: The Spotlight Moves (and gets lost if you're not careful)
+
+Visual Diagram:
+
+Data Structure:
+{
+  "Name": "Alice",
+  "Items": ["Apple", "Banana", "Cherry"]
+}
+
+OUTSIDE the loop (spotlight on entire map):
+  {{.Name}}         → "Alice"       ✓
+  {{.Items}}        → [entire list] ✓
+
+{{range .Items}}    ← Spotlight moves HERE
+  INSIDE the loop (spotlight on current item):
+  {{.}}             → "Apple"       ✓ (the string itself)
+  {{.Items}}        → ✗ CRASH! String "Apple" has no field .Items
+  {{.Name}}         → ✗ CRASH! String "Apple" has no field .Name
+{{end}}             ← Spotlight moves back
+
+AFTER the loop (spotlight back on map):
+  {{.Name}}         → "Alice"       ✓
+  {{.Items}}        → [entire list] ✓
+`)
+
+	fmt.Println("Advanced Example: Nested Data with {{with}}\n")
+
+	fmt.Println("Step 1: Template with {{with}} (temporary spotlight movement)")
+	code4 := `
+	text := "User: {{.User}}, {{with .Details}}Email: {{.Email}}, Phone: {{.Phone}}{{end}}"
+	tmpl := template.Must(template.New("nested").Parse(text))
+	`
+	fmt.Println(code4)
+
+	fmt.Println("Step 2: Data with nested structure")
+	code5 := `
 	data := map[string]interface{}{
 		"User": "Dave",
 		"Details": map[string]string{
@@ -154,67 +369,141 @@ After the loop (spotlight returns to map):
 			"Phone": "555-1234",
 		},
 	}
-	fmt.Println("Output: ")
-	tmpl7.Execute(os.Stdout, data)
-	fmt.Println("\n")
+	`
+	fmt.Println(code5)
 
-	fmt.Println("What happened:")
-	fmt.Println("  1. {{.User}} accesses the outer map → 'Dave'")
-	fmt.Println("  2. {{with .Details}} moves the spotlight to the Details map")
-	fmt.Println("  3. {{.Email}} now accesses 'dave@example.com' from Details")
-	fmt.Println("  4. {{with}} ends, spotlight returns to outer map\n")
+	fmt.Println("🔄 LIVE EXECUTION:\n")
 
-	// ============================================================
-	// PART 4: CLI Architecture - The Vending Machine Pattern
-	// ============================================================
-	fmt.Println("\n\nPART 4: CLI Architecture - The Vending Machine Pattern")
+	tmpl4 := template.Must(template.New("nested").Parse(
+		"User: {{.User}}, {{with .Details}}Email: {{.Email}}, Phone: {{.Phone}}{{end}}\n"))
+
+	data4 := map[string]interface{}{
+		"User": "Dave",
+		"Details": map[string]string{
+			"Email": "dave@example.com",
+			"Phone": "555-1234",
+		},
+	}
+
+	tmpl4.Execute(os.Stdout, data4)
+
+	fmt.Println("\n💡 What Happened:")
+	fmt.Println("==================")
+	fmt.Println(`
+1. {{.User}} → Accessed outer map → 'Dave'
+2. {{with .Details}} → Moved spotlight to the Details map
+3. {{.Email}} and {{.Phone}} → Accessed fields of Details
+4. {{end}} → Spotlight returns to outer map
+5. Result: User: Dave, Email: dave@example.com, Phone: 555-1234
+`)
+
+	fmt.Println("\n✅ KEY TAKEAWAY:")
+	fmt.Println("The dot (.) changes context. In loops, it becomes the current item. Use {{with}} to temporarily move context.\n")
+}
+
+// ============================================================
+// PART 4: THE CLI MENU APP - Complete Architecture
+// ============================================================
+
+func part4CLIMenuApp() {
+	fmt.Println("\n" + strings.Repeat("=", 70))
+	fmt.Println("PART 4: THE CLI MENU APP - Complete Architecture")
+	fmt.Println(strings.Repeat("=", 70) + "\n")
+
+	fmt.Println("📌 THE CONCEPT (The 'What'):")
+	fmt.Println("============================")
+	fmt.Println(`
+A menu-driven application has THREE PARTS:
+
+1. THE SETUP (Storing Templates)
+   - Pre-load ALL possible templates into memory
+   - Parse them ONCE at startup (parsing is slow)
+   - Store them in a map by name for instant lookup
+
+2. THE USER INPUT (The Listener)
+   - Listen to keyboard input from the user
+   - Read what they type until they press Enter
+   - Clean up the input (remove invisible Enter character)
+
+3. THE SWITCH (The Traffic Cop)
+   - Look at what the user chose
+   - Find the matching template in the storage
+   - Execute it with the user's data
+   - Print the result
+
+Why structure it this way?
+  ✓ EFFICIENCY: Parse once (slow), execute many times (fast)
+  ✓ SCALABILITY: Add 100 templates? Just add to the map.
+  ✓ MAINTAINABILITY: All templates in one place.
+`)
+
+	fmt.Println("\n📝 THE CODE (The 'How'):")
+	fmt.Println("=========================\n")
+
+	fmt.Println("STEP 1: THE SETUP - Pre-load templates into a storage map")
 	fmt.Println("=========================================================\n")
 
-	fmt.Println("The Final Example: Why Structure Templates in Maps?\n")
+	code1 := `
+	// Create an empty map to store templates
+	// Key = template name (string)
+	// Value = the compiled template (*template.Template)
+	parsedTemplates := make(map[string]*template.Template)
 
-	fmt.Println("🏪 Analogy: A Vending Machine\n")
+	// Fill the map with templates
+	parsedTemplates["welcome"] = template.Must(
+		template.New("welcome").Parse(
+			"🎉 Welcome, {{.Name}}! Your total: ${{.Total}}\n"))
 
-	fmt.Println("STEP 1: The Inventory (Pre-load Templates)")
-	fmt.Println("  - At startup, the machine loads ALL possible items into memory")
-	fmt.Println("  - It parses (compiles) them ONCE, not every time someone buys")
-	fmt.Println("  - Think of it as: map[string]*template = {\"1\": welcome, \"2\": goodbye}")
-	fmt.Println()
+	parsedTemplates["goodbye"] = template.Must(
+		template.New("goodbye").Parse(
+			"👋 Goodbye {{.Name}}! Thanks for ${{.Amount}}.\n"))
 
-	fmt.Println("STEP 2: The Keypad (User Presses a Button)")
-	fmt.Println("  - User types their choice: \"1\" or \"2\"")
-	fmt.Println("  - This is captured as a string variable")
-	fmt.Println()
+	parsedTemplates["error"] = template.Must(
+		template.New("error").Parse(
+			"⚠️  Error: {{.Message}}\n"))
+	`
+	fmt.Println(code1)
 
-	fmt.Println("STEP 3: The Dispenser (Look Up & Execute)")
-	fmt.Println("  - Machine looks up templates[\"2\"]")
-	fmt.Println("  - Fills it with data (like adding milk to coffee)")
-	fmt.Println("  - Pushes it out to the user's screen")
-	fmt.Println()
+	// LIVE: Set up templates
+	parsedTemplates := make(map[string]*template.Template)
 
-	fmt.Println("WHY THIS MATTERS:")
-	fmt.Println("  ✓ Parsing is EXPENSIVE (slow)")
-	fmt.Println("  ✓ Execution is CHEAP (fast)")
-	fmt.Println("  ✓ Do parsing once at startup")
-	fmt.Println("  ✓ When user clicks, just execute (instant)\n")
+	parsedTemplates["welcome"] = template.Must(
+		template.New("welcome").Parse(
+			"🎉 Welcome, {{.Name}}! Your total: ${{.Total}}\n"))
 
-	// Live example of the vending machine pattern
-	fmt.Println("🔄 Live Example: Vending Machine Pattern\n")
+	parsedTemplates["goodbye"] = template.Must(
+		template.New("goodbye").Parse(
+			"👋 Goodbye {{.Name}}! Thanks for ${{.Amount}}.\n"))
 
-	// STEP 1: Inventory (Pre-load templates)
-	templates := make(map[string]*template.Template)
+	parsedTemplates["error"] = template.Must(
+		template.New("error").Parse(
+			"⚠️  Error: {{.Message}}\n"))
 
-	templates["welcome"] = template.Must(template.New("welcome").Parse(
-		"🎉 Welcome, {{.Name}}! Your total: ${{.Total}}\n"))
+	fmt.Println("✅ Step 1 Complete: 3 templates are now loaded in memory (parsed & ready)\n")
 
-	templates["goodbye"] = template.Must(template.New("goodbye").Parse(
-		"👋 Goodbye {{.Name}}! Thanks for ${{.Amount}}. See you soon!\n"))
+	fmt.Println("\nSTEP 2: THE USER INPUT - Listen to keyboard (Simulated)")
+	fmt.Println("=======================================================\n")
 
-	templates["error"] = template.Must(template.New("error").Parse(
-		"⚠️  Error: {{.Message}}\n"))
+	code2 := `
+	// In a REAL app, you would do:
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter your name: ")
+	name, _ := reader.ReadString('\n')
+	name = strings.TrimSpace(name)  // Remove the invisible Enter character
 
-	fmt.Println("Step 1: Inventory loaded (3 templates parsed & ready)\n")
+	// For this demo, we'll simulate the input
+	`
+	fmt.Println(code2)
 
-	// STEP 2: User input (simulated)
+	// LIVE: Simulate user input
+	simulatedName := "Alice"
+	fmt.Printf("(Simulated) User entered: %s\n\n", simulatedName)
+
+	fmt.Println("\nSTEP 3: THE SWITCH - Traffic Cop routing")
+	fmt.Println("========================================\n")
+
+	code3 := `
+	// Simulate user choosing different options
 	choices := []struct {
 		choice string
 		data   interface{}
@@ -224,13 +513,31 @@ After the loop (spotlight returns to map):
 		{"error", map[string]interface{}{"Message": "Invalid card"}},
 	}
 
-	fmt.Println("Step 2 & 3: User presses buttons & templates execute instantly\n")
+	// For each choice, look it up and execute
+	for _, c := range choices {
+		if tmpl, exists := parsedTemplates[c.choice]; exists {
+			tmpl.Execute(os.Stdout, c.data)
+		}
+	}
+	`
+	fmt.Println(code3)
 
-	// STEP 3: Dispenser (execute the selected template)
+	// LIVE: Execute each template
+	fmt.Println("🔄 LIVE EXECUTION:\n")
+
+	choices := []struct {
+		choice string
+		data   interface{}
+	}{
+		{"welcome", map[string]interface{}{"Name": "Alice", "Total": 42.50}},
+		{"goodbye", map[string]interface{}{"Name": "Bob", "Amount": 25.00}},
+		{"error", map[string]interface{}{"Message": "Invalid card"}},
+	}
+
 	for _, c := range choices {
 		fmt.Printf("User pressed: '%s'\n", c.choice)
 		fmt.Print("Output: ")
-		if tmpl, exists := templates[c.choice]; exists {
+		if tmpl, exists := parsedTemplates[c.choice]; exists {
 			tmpl.Execute(os.Stdout, c.data)
 		} else {
 			fmt.Printf("Template '%s' not found\n", c.choice)
@@ -238,61 +545,186 @@ After the loop (spotlight returns to map):
 		fmt.Println()
 	}
 
-	fmt.Println("Performance Note:")
-	fmt.Println("  - Parsed template: 3 templates, parsed ONCE")
-	fmt.Println("  - Executed template: Millions of times instantly")
-	fmt.Println("  - This is why web servers use this pattern!")
-	fmt.Println()
+	fmt.Println("\n💡 PERFORMANCE EXPLANATION:")
+	fmt.Println("============================")
+	fmt.Println(`
+Parsing vs Execution:
+  - Parsing: Converting template text to instructions (SLOW)
+  - Execution: Using pre-parsed template with data (FAST)
 
-	// ============================================================
-	// Summary
-	// ============================================================
-	fmt.Println("\n=== Summary ===\n")
-	fmt.Println("✅ Part 1: Dot notation accesses fields in your data")
-	fmt.Println("✅ Part 2: Conditionals use function-call syntax (ge, eq, lt, etc.)")
-	fmt.Println("✅ Part 3: The dot changes meaning in loops (spotlight moves)")
-	fmt.Println("✅ Part 4: Pre-parse templates, execute them fast (vending machine)")
-	fmt.Println()
+In this app:
+  - Parse once: 3 templates, parsed at startup (happens 3 times total)
+  - Execute many: Could run the same template 1,000,000 times instantly
+
+Why parse at startup?
+  - User requests happen continuously (potentially 1000s/sec on a web server)
+  - Parsing every time = 1000s of slow operations
+  - Pre-parse = parse once, serve 1000s of fast requests
+
+This is why EVERY WEB SERVER (Python, Go, Ruby, etc.) does this pattern!
+`)
+
+	fmt.Println("\n✅ KEY TAKEAWAY:")
+	fmt.Println("Structure: Setup (parse once) → Input (listen) → Switch (execute fast). This is a universal pattern.\n")
 }
 
 // ============================================================
-// REFERENCE SECTION: Template Syntax Cheat Sheet
+// PART 5: KEY TERMS REFERENCE
 // ============================================================
 
-// Variable Syntax
-// {{.FieldName}}           → Access field in data
-// {{.}}                    → Current value (especially in loops)
-// {{.Person.Name}}         → Nested field access
+func part5KeyTermsReference() {
+	fmt.Println("\n" + strings.Repeat("=", 70))
+	fmt.Println("PART 5: KEY TERMS REFERENCE")
+	fmt.Println(strings.Repeat("=", 70) + "\n")
 
-// Loops
-// {{range .Items}}         → Loop over items
-//   {{.}}                  → Current item
-// {{end}}
+	fmt.Println("Summary of Important Concepts:\n")
 
-// Conditionals with Function-Call Syntax
-// {{if eq .Value 5}}       → Equal
-// {{if ne .Value 5}}       → Not Equal
-// {{if lt .Value 5}}       → Less Than
-// {{if le .Value 5}}       → Less or Equal
-// {{if gt .Value 5}}       → Greater Than
-// {{if ge .Value 5}}       → Greater or Equal
-// {{if and .A .B}}         → Logical AND
-// {{if or .A .B}}          → Logical OR
+	fmt.Println("📌 os.Stdout (Where output goes)")
+	fmt.Println("================================")
+	fmt.Println(`
+What it means: The computer screen (your Terminal window)
 
-// Template Functions
-// {{len .Slice}}           → Built-in: length
-// {{.Name | upper}}        → Pipe operator (custom function)
-// {{printf "%d" .Count}}   → Format function
+When you write:
+  tmpl.Execute(os.Stdout, data)
+  
+You're saying: "Print the result to the terminal screen"
 
-// Context Switching
-// {{with .Details}}        → Change dot context to .Details
-//   {{.Email}}             → Access fields of Details
-// {{end}}                  → Context returns to outer data
+Other options:
+  file, _ := os.Create("output.txt")
+  tmpl.Execute(file, data)          ← Write to a file instead
+  
+  var buf bytes.Buffer
+  tmpl.Execute(&buf, data)           ← Write to memory instead
+`)
 
-// Best Practices:
-// ✓ Pre-parse templates at startup (parse once, execute many)
-// ✓ Use maps to store multiple templates for fast lookup
-// ✓ Keep templates in separate files when possible
-// ✓ Define custom functions for business logic
-// ✓ Use descriptive field names for clarity
-// ✓ Remember: the Dot (.) changes meaning in loops and {{with}} blocks
+	fmt.Println("\n📌 bytes.Buffer (Temporary holding area in memory)")
+	fmt.Println("===================================================")
+	fmt.Println(`
+What it means: A place to store text in memory instead of printing it
+
+Example: You want to capture output in a variable first
+  var buf bytes.Buffer
+  tmpl.Execute(&buf, data)        ← Store in memory
+  
+  result := buf.String()           ← Convert to string
+  fmt.Println("Result:", result)   ← Now you can use it
+  
+When to use:
+  ✓ Sending output via email (capture it first)
+  ✓ Logging (save to file after generation)
+  ✓ Testing (check if output is correct before using)
+`)
+
+	fmt.Println("\n📌 FuncMap (Teaching templates new functions)")
+	fmt.Println("==============================================")
+	fmt.Println(`
+What it means: A way to teach templates custom functions they don't know by default
+
+Example: Templates don't have a .Upper() function by default
+  funcMap := template.FuncMap{
+    "upper": func(s string) string { 
+      return strings.ToUpper(s) 
+    },
+  }
+  
+  tmpl := template.New("test").Funcs(funcMap).Parse(
+    "Uppercase: {{upper .Name}}")
+  
+  tmpl.Execute(os.Stdout, map[string]string{"Name": "alice"})
+  // Output: Uppercase: ALICE
+
+Common custom functions:
+  "title"     → "alice smith" → "Alice Smith"
+  "lower"     → "HELLO" → "hello"
+  "reverse"   → "abc" → "cba"
+  "repeat"    → "a" × 5 → "aaaaa"
+`)
+
+	fmt.Println("\n📌 {{with .Field}} (Spotlight shortcut)")
+	fmt.Println("========================================")
+	fmt.Println(`
+What it means: Temporarily move the spotlight to focus on one field
+
+Instead of:
+  {{.Details.Email}} {{.Details.Phone}} {{.Details.Address}}
+  
+You can write:
+  {{with .Details}}
+    {{.Email}} {{.Phone}} {{.Address}}
+  {{end}}
+
+Why use it?
+  ✓ Cleaner, easier to read
+  ✓ Avoid repeating .Details over and over
+  ✓ Like a "temporary zoom" into that section
+
+Example:
+  {{with .User}}
+    Name: {{.Name}}
+    Email: {{.Email}}
+  {{end}}
+  
+This is equivalent to:
+  Name: {{.User.Name}}
+  Email: {{.User.Email}}
+`)
+
+	fmt.Println("\n📌 map[string]interface{} (Mixed types)")
+	fmt.Println("========================================")
+	fmt.Println(`
+What it means: A map that can hold ANY type of value
+
+Limitation of map[string]string:
+  m := map[string]string{
+    "name": "Alice",     ✓ string
+    "age": "25",         ✓ (must be a string, even though it's a number)
+    "age": 25,           ✗ ERROR! Only strings allowed
+  }
+
+Power of map[string]interface{}:
+  m := map[string]interface{}{
+    "name": "Alice",     ✓ string
+    "age": 25,           ✓ integer
+    "scores": []int{90}, ✓ slice
+    "valid": true,       ✓ boolean
+  }
+
+Why templates care:
+  - When comparing numbers with ge, lt, etc., the engine needs the REAL type
+  - "25" (string) and 25 (int) behave differently in comparisons
+  - Use interface{} to give templates the full picture
+`)
+
+	fmt.Println("\n📌 bufio.NewReader (Reading keyboard input)")
+	fmt.Println("============================================")
+	fmt.Println(`
+What it means: A way to read user input from the keyboard
+
+Example:
+  reader := bufio.NewReader(os.Stdin)
+  fmt.Print("Enter your name: ")
+  name, _ := reader.ReadString('\n')  ← Read until Enter key
+  name = strings.TrimSpace(name)      ← Remove the invisible Enter
+  
+Why TrimSpace()?
+  When you type "Alice" and press Enter, Go reads it as "Alice\n"
+  The \n is an invisible character representing the Enter key
+  TrimSpace() removes it, leaving just "Alice"
+
+What is os.Stdin?
+  - Stdin = Standard Input (your keyboard)
+  - Stdout = Standard Output (your screen)
+  - Stderr = Standard Error (also your screen, for error messages)
+`)
+
+	fmt.Println("\n" + strings.Repeat("=", 70))
+	fmt.Println("FINAL SUMMARY")
+	fmt.Println(strings.Repeat("=", 70) + "\n")
+
+	fmt.Println("✅ PART 1: Templates are text with {{.Field}} holes. Dots access map fields.")
+	fmt.Println("✅ PART 2: Conditionals use function-call syntax (ge, eq, lt). Use interface{} for mixed types.")
+	fmt.Println("✅ PART 3: The dot (.) changes meaning in loops. Use {{range}} and {{with}} carefully.")
+	fmt.Println("✅ PART 4: Pre-parse templates, execute fast. This is the universal web server pattern.")
+	fmt.Println("✅ PART 5: os.Stdout, bytes.Buffer, FuncMap, {{with}} are powerful tools.")
+	fmt.Println("\n🎯 Master these 5 parts, and you master Go text templates.\n")
+}
