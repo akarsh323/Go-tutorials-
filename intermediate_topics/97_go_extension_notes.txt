@@ -7,3 +7,200 @@ func Demo97GoExtensionNotes() {
 	fmt.Println("-- 97 Go Extension (notes) --")
 	fmt.Println("Use the official VS Code Go extension for formatting, linting, debugging.")
 }
+Now you must be wondering, why am I taking up the topic of Go extension for VS code now?
+
+We have come so far in this course and now I am bringing up the topic of Go extension, and that is
+
+because we have been working on Go and making use of the Go extension for quite a while now.
+
+We are subconsciously observing what's happening inside our code.
+
+We are getting some squiggly lines.
+
+We are getting error messages when we have used an incorrect message, or we have passed an incorrect
+
+argument to a function.
+
+So we have seen the behavior of the Go extension in the VS code, and it is about time to discuss a
+
+little further about what it actually is doing and what it actually is made of.
+
+Madoff.
+
+So first let's go through the introduction of the Go extension for VS code.
+
+It provides a comprehensive set of features that include syntax checking, linting, and error reporting
+
+that align closely with the go compiler and tools.
+
+Now let's see how it works.
+
+Key features of the Go extension for VS code include.
+
+Syntax highlighting.
+
+The purpose of syntax highlighting is to help in visually differentiating parts of the code, such as
+
+keywords, variables, and types, which aids in readability and spotting syntax errors.
+
+How it works is that the extension uses language grammar files to provide color coding for different
+
+elements in the go language.
+
+Next, we have error reporting and diagnostics through the Go extension.
+
+Attention.
+
+The purpose of error reporting and diagnostics is to provide real time feedback on errors and potential
+
+issues in the code before running it, and we are making use of it a lot frequently, because as soon
+
+as we type something incorrect, even before we are running the code, we are getting the error message
+
+in our code.
+
+When we hover over that squiggly line, we get a long error message using which we can correct our code.
+
+So how it works is that the go extension uses the go plus language server.
+
+So it's Gopls and that's the language server.
+
+It's the Goes language server protocol implementation to analyze the code as you type.
+
+So this language server protocol is analyzing your code in real time as you're typing it.
+
+Gopls performs syntax checking, type checking, and provides diagnostics based on the go compiler's
+
+rules.
+
+Errors and warnings are shown directly in the editor, often with squiggly lines and inline messages.
+
+Next feature of go extension is linting lint.
+
+So that's linting.
+
+Linting identifies potential issues that may not be strictly errors, but could lead to problems or
+
+are against go conventions.
+
+And that's how we get warnings.
+
+The warnings are also squiggly lines, but they are highlighted in yellow and they are something that
+
+we can avoid and still run our code if we have an error in our code, then it will definitely generate
+
+an error and the code will not compile.
+
+It will not run.
+
+But warning is something that can be avoided, that can be discarded, and the code will still run.
+
+So we can run the code even if we have warning messages in our code base.
+
+How linting works is that the extension integrates with linters like go lint, static check, and Gocheck
+
+to provide feedback on code quality and adherence to best practices.
+
+Another feature that we have is code formatting.
+
+Code formatting automatically formats the code to follow Go's formatting conventions, even if we do
+
+not have a leading space.
+
+And as soon as we hit control S, we have leading space in our go code, even if the indentation is
+
+incorrect.
+
+As soon as we hit Ctrl s, the indentation will automatically correct itself.
+
+Using code formatting feature of go extension.
+
+How it works is that the extension uses go fmt or go imports to format the code and sharing consistent
+
+code style and structure.
+
+And another feature that we notice is code navigation.
+
+It provides features like go to definition, find references and code suggestions.
+
+So when we control click a variable or a function, then we find all the references of that function
+
+or that variable inside our code.
+
+And we also have go to definition.
+
+We can go to the definition of that function where it is defined.
+
+So how it works is that go TLS enables these features by analyzing the code base and understanding the
+
+relationships between different parts of the code.
+
+So as I stated earlier, your code is being analyzed real time.
+
+And that's how these features, these different functions of go extension work.
+
+And if we visit the Go extension on GitHub, we see that it mentions intellisense.
+
+And even in the description that we see on VS code for the Go extension, it states something called
+
+intellisense as the first feature highlight.
+
+So IntelliSense offers code suggestions, auto completions, and function signatures as you type.
+
+The extension uses language server features to suggest code completions based on the current context
+
+and the available libraries.
+
+And finally, we have a debugging feature in the go code extension.
+
+It allows us to set breakpoints, step through code, and inspect variables during runtime.
+
+How it works is that it integrates with Go's debugging tools like delve to provide a powerful debugging
+
+experience directly within the VS code editor.
+
+So what go vs code extension does is that we get a go compiler before we run the compiler, because
+
+go vs code extension analyzes our code based on the instructions that are fed to the go compiler.
+
+However, yes, there are certain errors that are only caught when we run the code, But yes, there
+
+are many, many errors that we do avoid before even running the code.
+
+So the go extension does contain a lot of rules that the go compiler follows and generates error in
+
+our code based on those rules.
+
+So let's see how the go extension aligns with the go compiler.
+
+The go extensions.
+
+Error reporting and linting are designed to be consistent with what the go compiler reports.
+
+This helps ensure that the feedback provided by the extension is reliable and relevant.
+
+The go code extension also has pre-compilation checks.
+
+Many errors and issues are detected before code execution due to the static analysis performed by Gopls
+
+and integrated tools.
+
+This pre-emptive feedback helps catch problems early in the development process.
+
+And now let's come to real time feedback that we get from the Go extension.
+
+As you write or modify your code, the extension updates its diagnostics and suggestions in real time,
+
+reflecting the state of your code as closely as possible to what would be seen if you were to compile
+
+or run it.
+
+Overall, the Go extension for VS code provides a robust set of features that align closely with Go's
+
+compiler and tools.
+
+It ensures that you receive timely feedback on code errors, adherence to go conventions and potential
+
+issues, enhancing the development experience and helping maintain code quality.
+
+

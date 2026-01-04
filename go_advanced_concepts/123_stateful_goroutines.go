@@ -1,80 +1,138 @@
+**Topic: Stateful Goroutines**
+
+This file implements the **Stateful Worker** pattern discussed.
+It demonstrates how to maintain internal state (memory) inside a Goroutine safely using channels, without needing Mutex locks.
+
+You can save this code in a file named `main.go` and run it using `go run main.go`.
+
+```go
 package main
 
 import (
 	"fmt"
-	"math/rand"
-	"sync/atomic"
 	"time"
 )
 
-// TOPIC: Stateful Goroutines
-// Explanation: Instead of using Mutexes to protect shared data, we can use
-// Go's philosophy: "Do not communicate by sharing memory; share memory by communicating."
-// A single goroutine owns the state, and others communicate with it via channels.
+/*
+TOPIC: STATEFUL GOROUTINES
 
-type readOp struct {
-	key  int
-	resp chan int
+CONCEPT:
+A Stateful Goroutine is a process that remembers data (history) across multiple calls.
+Instead of using Global Variables or Mutexes to protect this data, we use
+a single Goroutine that "owns" the data.
+
+THE PATTERN:
+1. The State: Kept inside a struct (e.g., 'count').
+2. The Guard: A background Goroutine that loops forever.
+3. The Input: A channel. The loop reads from the channel to update state.
+
+WHY IT WORKS:
+Channels naturally serialize data. Even if 100 functions call .Send() at once,
+the Goroutine receives them one-by-one, preventing Race Conditions perfectly.
+*/
+
+// ---------------------------------------------------------
+// 1. The Blueprint (Encapsulation)
+// ---------------------------------------------------------
+
+// StatefulWorker holds the state and the communication line.
+type StatefulWorker struct {
+	count int      // INTERNAL STATE: Only the background goroutine touches this.
+	ch    chan int // INPUT: The only way to talk to the worker.
 }
-type writeOp struct {
-	key  int
-	val  int
-	resp chan bool
+
+// NewStatefulWorker is a constructor to initialize the worker safely.
+func NewStatefulWorker() *StatefulWorker {
+	return &StatefulWorker{
+		count: 0,
+		ch:    make(chan int),
+	}
 }
 
-func main() {
-	var readOps uint64
-	var writeOps uint64
+// ---------------------------------------------------------
+// 2. The Engine (Start Method)
+// ---------------------------------------------------------
 
-	reads := make(chan readOp)
-	writes := make(chan writeOp)
+// Start initializes the background process.
+func (w *StatefulWorker) Start() {
+	fmt.Println("[Worker] Engine Starting...")
 
-	// This is the Stateful Goroutine. It owns the 'state' map.
+	// Launch the "Guard" Goroutine
 	go func() {
-		var state = make(map[int]int)
+		// Infinite loop keeps the state alive
 		for {
+			// Wait for data to arrive on the channel
 			select {
-			case read := <-reads:
-				read.resp <- state[read.key]
-			case write := <-writes:
-				state[write.key] = write.val
-				write.resp <- true
+			case value := <-w.ch:
+				// --- CRITICAL SECTION (Implicit) ---
+				// No Mutex needed! Only this single goroutine runs this code.
+				
+				// Calculate new state based on history
+				prev := w.count
+				w.count += value
+				
+				fmt.Printf("   -> Received: %d | (Old: %d + New: %d) = Total: %d\n", 
+					value, prev, value, w.count)
 			}
 		}
 	}()
-
-	// Start 100 goroutines requesting reads
-	for r := 0; r < 100; r++ {
-		go func() {
-			for {
-				read := readOp{
-					key:  rand.Intn(5),
-					resp: make(chan int)}
-				reads <- read
-				<-read.resp
-				atomic.AddUint64(&readOps, 1)
-				time.Sleep(time.Millisecond)
-			}
-		}()
-	}
-
-	// Start 10 goroutines requesting writes
-	for w := 0; w < 10; w++ {
-		go func() {
-			for {
-				write := writeOp{
-					key:  rand.Intn(5),
-					val:  rand.Intn(100),
-					resp: make(chan bool)}
-				writes <- write
-				<-write.resp
-				atomic.AddUint64(&writeOps, 1)
-				time.Sleep(time.Millisecond)
-			}
-		}()
-	}
-
-	time.Sleep(time.Second)
-	fmt.Println("readOps:", atomic.LoadUint64(&readOps))
-	fmt.Println("writeOps:", atomic.LoadUint64(&writeOps))
 }
+
+// ---------------------------------------------------------
+// 3. The Interface (Send Method)
+// ---------------------------------------------------------
+
+// Send is a helper method. It hides the complexity of channels from the user.
+// The user just calls .Send(5), they don't need to know about "<-w.ch".
+func (w *StatefulWorker) Send(value int) {
+	w.ch <- value
+}
+
+// ---------------------------------------------------------
+// 4. Execution (Main)
+// ---------------------------------------------------------
+
+func main() {
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("TOPIC: STATEFUL GOROUTINES (THE ACCUMULATOR)")
+	fmt.Println("═══════════════════════════════════════════════════════════\n")
+
+	// 1. Initialize
+	streetWorker := NewStatefulWorker()
+
+	// 2. Start the Engine
+	streetWorker.Start()
+
+	// 3. Interaction Loop
+	// We simulate a stream of data coming in (0, 1, 2, 3, 4)
+	fmt.Println("[Main] Starting data stream...")
+	
+	for i := 0; i < 5; i++ {
+		fmt.Printf("[Main] Sending value: %d\n", i)
+		streetWorker.Send(i)
+		
+		// Sleep purely to make the output readable and distinct
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	fmt.Println("\n[Main] Stream finished.")
+	
+	// Wait a moment before exiting so the final print can finish
+	time.Sleep(100 * time.Millisecond)
+	
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println("KEY TAKEAWAYS")
+	fmt.Println("═══════════════════════════════════════════════════════════")
+	fmt.Println(`
+1. NO MUTEX NEEDED: Since only ONE goroutine accesses 'w.count', 
+   we cannot have a race condition.
+   
+2. SEQUENTIAL ACCESS: The channel forces data to line up single-file.
+   Even if Main sent 100 items instantly, the Worker processes them one by one.
+
+3. PERSISTENCE: The 'count' variable lives as long as the for-loop runs.
+   This is how we give "memory" to a concurrent process.
+	`)
+}
+
+```
