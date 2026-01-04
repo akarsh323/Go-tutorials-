@@ -583,7 +583,7 @@ CLEANUP PATTERN:
   resource, err := Create[Temp|Temp]()
   if err != nil { ... }
   defer cleanup()  // ALWAYS use defer!
-  
+
   // Use resource
 
 STORAGE LOCATIONS (automatic):
